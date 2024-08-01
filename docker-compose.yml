@@ -1,0 +1,64 @@
+services:
+    app:
+        build: .
+        image: lv-role-management-app
+        container_name: lv-role-management-app
+        restart: no
+        tty: true
+        environment:
+            SERVICE_NAME: app
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+            - ./storage/php.ini:/usr/local/etc/php/conf.d/local.ini
+        networks:
+            - net
+
+    webserver:
+        image: nginx
+        container_name: nginx-lv-role-management-app
+        restart: no
+        tty: true
+        ports:
+            - "8080:80"
+        volumes:
+            - .:/var/www/html
+            - ./storage/:/etc/nginx/conf.d/
+        networks:
+            - net
+
+    db:
+        image: mysql
+        container_name: db-lv-role-management-app
+        restart: no
+        tty: true
+        ports:
+            - "33061:3306"
+        volumes:
+            - lbdata:/var/lib/mysql
+        environment:
+            MYSQL_PASSWORD: 12345687
+            MYSQL_ROOT_PASSWORD: 12345678
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        networks:
+            - net
+
+    phpmyadmin:
+        image: phpmyadmin
+        container_name: pma-lv-role-management-app
+        links:
+            - db
+        restart: no
+        ports:
+            - 8081:80
+        networks:
+            - net
+
+networks:
+    net:
+        driver: bridge
+
+volumes:
+    lbdata:
+        driver: local
